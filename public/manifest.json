@@ -1,0 +1,58 @@
+{
+  "name": "ระบบสแกนป้ายทะเบียน",
+  "short_name": "สแกนป้ายทะเบียน",
+  "description": "แอปพลิเคชันสำหรับสแกนป้ายทะเบียนรถและตรวจสอบข้อมูล รองรับการทำงานแบบออฟไลน์",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976D2",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "สแกนป้ายทะเบียน",
+      "short_name": "สแกน",
+      "description": "เปิดกล้องเพื่อสแกนป้ายทะเบียน",
+      "url": "/scan",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ประวัติการสแกน",
+      "short_name": "ประวัติ",
+      "description": "ดูประวัติการสแกนป้ายทะเบียน",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "offline_enabled": true
+}
