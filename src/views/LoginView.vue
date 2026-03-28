@@ -1,41 +1,77 @@
 <template>
-   <v-container class="fill-height" fluid>
+   <v-container class="fill-height" fluid style="background: var(--color-bg);">
       <v-row align="center" justify="center">
-         <v-col cols="12" sm="8" md="4">
-            <v-card class="elevation-0">
+         <v-col cols="12" sm="8" md="4" style="max-width: 380px;">
+            <!-- Logo -->
+            <div class="text-center mb-12">
+               <div style="width: 64px; height: 64px; border-radius: 16px; background: var(--color-primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                  <v-icon color="white" size="30">mdi-camera</v-icon>
+               </div>
+               <div style="font-size: 22px; font-weight: 800; color: var(--color-text); letter-spacing: -0.02em;">
+                  Vehicle Scanner
+               </div>
+               <div style="font-size: 14px; color: var(--color-text-tertiary); margin-top: 4px;">
+                  ระบบสแกนป้ายทะเบียน
+               </div>
+            </div>
 
+            <!-- Form -->
+            <v-form ref="form" @submit.prevent="handleLogin" class="minimal-form">
+               <div class="mb-4">
+                  <label style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 6px; letter-spacing: 0.03em;">ชื่อผู้ใช้</label>
+                  <v-text-field
+                     v-model="formData.username"
+                     placeholder="กรอกชื่อผู้ใช้"
+                     autofocus
+                     :rules="[rules.required]"
+                     hide-details="auto"
+                     density="comfortable"
+                  />
+               </div>
 
-               <v-toolbar color="white" class="text-center" dark flat>
-                  <v-toolbar-title>
-                     ระบบสแกนป้ายทะเบียน
-                  </v-toolbar-title>
-               </v-toolbar>
+               <div class="mb-4">
+                  <label style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 6px; letter-spacing: 0.03em;">รหัสผ่าน</label>
+                  <v-text-field
+                     v-model="formData.password"
+                     placeholder="กรอกรหัสผ่าน"
+                     :type="showPassword ? 'text' : 'password'"
+                     :append-inner-icon="showPassword ? 'mdi-eye-outline' : 'mdi-eye-off-outline'"
+                     @click:append-inner="showPassword = !showPassword"
+                     :rules="[rules.required]"
+                     hide-details="auto"
+                     density="comfortable"
+                  />
+               </div>
 
-               <v-card-text>
-                  <v-form ref="form" @submit.prevent="handleLogin">
-                     <v-text-field v-model="formData.username" label="ชื่อผู้ใช้" prepend-inner-icon="mdi-account"
-                        autofocus variant="outlined" :rules="[rules.required]" class="mb-3"
-                        :persistent-placeholder="false" />
+               <v-alert v-if="errorMessage" type="error" density="compact" class="mb-4" variant="tonal" rounded="lg" border="start">
+                  {{ errorMessage }}
+               </v-alert>
 
-                     <v-text-field v-model="formData.password" label="รหัสผ่าน" prepend-inner-icon="mdi-lock"
-                        :type="showPassword ? 'text' : 'password'"
-                        :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                        @click:append-inner="showPassword = !showPassword" variant="outlined" :rules="[rules.required]"
-                        :persistent-placeholder="false" />
+               <v-btn
+                  color="#1C1917"
+                  block
+                  size="large"
+                  type="submit"
+                  :loading="loading"
+                  rounded="lg"
+                  class="mt-2"
+                  style="font-weight: 700; font-size: 16px; letter-spacing: 0;"
+               >
+                  เข้าสู่ระบบ
+               </v-btn>
 
-                     <v-alert v-if="errorMessage" type="error" density="compact" class="mb-3">
-                        {{ errorMessage }}
-                     </v-alert>
-
-                     <v-btn color="primary" block size="large" type="submit" :loading="loading">
-                        เข้าสู่ระบบ
-                     </v-btn>
-                     <v-btn color="secondary" block size="large" class="mt-15" @click="goOtpLogin">
-                        สมัคร
-                     </v-btn>
-                  </v-form>
-               </v-card-text>
-            </v-card>
+               <v-btn
+                  variant="outlined"
+                  block
+                  size="large"
+                  class="mt-3"
+                  rounded="lg"
+                  style="font-weight: 600; font-size: 15px; letter-spacing: 0; border-color: var(--color-border); color: var(--color-text-secondary);"
+                  @click="goOtpLogin"
+               >
+                  สมัครด้วย OTP
+               </v-btn>
+            </v-form>
          </v-col>
       </v-row>
    </v-container>
@@ -50,7 +86,6 @@ import { useRoute, useRouter } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
 
-// เช็คว่าเคยเข้าสู่ระบบมาก่อนหรือไม่
 onMounted(() => {
    const loginData = localStorage.getItem('loginData')
    if (loginData) {
@@ -84,20 +119,17 @@ const handleLogin = async () => {
    errorMessage.value = ''
 
    try {
-      // เรียก API login
       const response = await api.post('/lpr/login', {
          username: formData.username,
          password: formData.password
       })
 
-      // ✅ ปรับให้ตรงกับ response structure ที่ได้จริง
       const { status, result } = response.data
 
       if (status === 'success' && result) {
-         // บันทึก token และ user data ใน IndexedDB
          await db.userSession.put({
             id: 1,
-            token: result.lpr_token,  // ✅ ใช้ lpr_token
+            token: result.lpr_token,
             userData: {
                id: result.user.id,
                username: result.user.username,
@@ -108,7 +140,6 @@ const handleLogin = async () => {
             loginAt: new Date()
          })
 
-         // เก็บข้อมูล login ใน localStorage
          localStorage.setItem('loginData', JSON.stringify({
             token: result.lpr_token,
             username: result.user.username,
@@ -116,10 +147,7 @@ const handleLogin = async () => {
          }))
 
          console.log('✓ Login successful:', result.user.username)
-
-         // Redirect ไปหน้า history
-         const redirect = '/'
-         router.push(redirect)
+         router.push('/')
       } else {
          throw new Error('Invalid response format')
       }
@@ -127,16 +155,12 @@ const handleLogin = async () => {
    } catch (error) {
       console.error('Login error:', error)
 
-      // ✅ จัดการ error ให้ดีขึ้น
       if (error.response) {
-         // Server responded with error
          const errorData = error.response.data
          errorMessage.value = errorData.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
       } else if (error.request) {
-         // Request made but no response
          errorMessage.value = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้'
       } else {
-         // Something else happened
          errorMessage.value = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'
       }
    } finally {

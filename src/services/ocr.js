@@ -21,12 +21,24 @@ export const useOCR = () => {
          console.log('   File:', imageFile.name)
          console.log('   Size (original):', imageFile.size, 'bytes')
 
-         // ลดขนาดภาพให้ต่ำกว่า 800KB
-         let processedFile = imageFile
-         if (imageFile.size > 800 * 1024) {
-            console.log('📦 Compressing image...')
-            processedFile = await compressImage(imageFile, 800 * 1024) // 800KB
-            console.log('   Size (compressed):', processedFile.size, 'bytes')
+         // ลดขนาดภาพให้ต่ำกว่า 50KB
+         let processedFile = imageFile;
+         if (imageFile.size > 50 * 1024) {
+            console.log('📦 Resizing image to <50KB...');
+            let quality = 0.7;
+            let resizedFile = imageFile;
+            // ลดขนาดภาพและคุณภาพจนกว่าจะต่ำกว่า 50KB หรือ quality ต่ำสุด
+            do {
+               resizedFile = await resizeImage(resizedFile, {
+                  maxWidth: 800,
+                  maxHeight: 800,
+                  mimeType: 'image/jpeg',
+                  quality: quality
+               });
+               quality -= 0.1;
+            } while (resizedFile.size > 50 * 1024 && quality >= 0.3);
+            processedFile = resizedFile;
+            console.log('   Size (resized):', processedFile.size, 'bytes');
          }
 
          const formData = new FormData()
@@ -93,77 +105,60 @@ const fileToBase64 = (file) => {
       reader.readAsDataURL(file)
    })
 }
-// Helper: ลดขนาดภาพ
-const compressImage = (file, maxSizeBytes) => {
+// Helper: ลดขนาดภาพแบบตั้งค่าได้
+const MAX_WIDTH = 1000;
+const MAX_HEIGHT = 1000;
+const MIME_TYPE = "image/jpeg";
+const QUALITY = 0.9;
+
+export const resizeImage = (file, options = {}) => {
+   const maxWidth = options.maxWidth || MAX_WIDTH;
+   const maxHeight = options.maxHeight || MAX_HEIGHT;
+   const mimeType = options.mimeType || MIME_TYPE;
+   const quality = options.quality || QUALITY;
+
    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-
-      reader.onload = (e) => {
-         const img = new Image()
-
+      const reader = new FileReader();
+      reader.onload = (event) => {
+         const img = new Image();
          img.onload = () => {
-            const canvas = document.createElement('canvas')
-            const ctx = canvas.getContext('2d')
+            let width = img.width;
+            let height = img.height;
 
-            // คำนวณขนาดใหม่ โดยรักษาอัตราส่วน
-            let width = img.width
-            let height = img.height
-            const maxDimension = 1280 // ลดจาก 1920 เป็น 1280
-
-            if (width > height && width > maxDimension) {
-               height = (height * maxDimension) / width
-               width = maxDimension
-            } else if (height > maxDimension) {
-               width = (width * maxDimension) / height
-               height = maxDimension
+            if (width > height) {
+               if (width > maxWidth) {
+                  height *= maxWidth / width;
+                  width = maxWidth;
+               }
+            } else {
+               if (height > maxHeight) {
+                  width *= maxHeight / height;
+                  height = maxHeight;
+               }
             }
 
-            canvas.width = width
-            canvas.height = height
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
 
-            // วาดภาพใหม่
-            ctx.drawImage(img, 0, 0, width, height)
-
-            // ลดคุณภาพจนกว่าจะได้ขนาดที่ต้องการ
-            let quality = 0.85 // ลดจาก 0.9 เป็น 0.85
-            const tryCompress = () => {
-               canvas.toBlob(
-                  (blob) => {
-                     if (!blob) {
-                        reject(new Error('Failed to compress image'))
-                        return
-                     }
-
-                     // ถ้าขนาดยังใหญ่เกินไป และ quality > 0.2 ให้ลดต่อ
-                     if (blob.size > maxSizeBytes && quality > 0.2) {
-                        quality -= 0.05 // ลดทีละ 5% แทน 10%
-                        tryCompress()
-                     } else {
-                        // สร้าง File object ใหม่
-                        const compressedFile = new File(
-                           [blob],
-                           file.name,
-                           { type: 'image/jpeg' }
-                        )
-                        resolve(compressedFile)
-                     }
-                  },
-                  'image/jpeg',
-                  quality
-               )
-            }
-
-            tryCompress()
-         }
-
-         img.onerror = () => reject(new Error('Failed to load image'))
-         img.src = e.target.result
-      }
-
-      reader.onerror = () => reject(new Error('Failed to read file'))
-      reader.readAsDataURL(file)
-   })
-}
+            canvas.toBlob((blob) => {
+               if (!blob) {
+                  reject(new Error("Failed to resize image"));
+                  return;
+               }
+               const resizedFile = new File([blob], `resized_${file.name}`, { type: mimeType });
+               resolve(resizedFile);
+            }, mimeType, quality);
+         };
+         img.onerror = () => reject(new Error("Failed to load image"));
+         img.src = event.target.result;
+      };
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+   });
+};
 
 // ฟังก์ชันอ่านออกเสียงทะเบียนรถ
 const speakPlateNumber = (plateNumber, province) => {

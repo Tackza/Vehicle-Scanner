@@ -5,12 +5,15 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import router from './router'
 import { syncService } from './services/sync'
+import './assets/minimal.css'
+import Camera from "simple-vue-camera";
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 app.use(vuetify)
+app.component('Camera', Camera)
 
 app.mount('#app')
 

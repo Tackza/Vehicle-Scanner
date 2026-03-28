@@ -5,6 +5,8 @@ import axios from 'axios'
 // ✅ เปลี่ยน URL ตามของจริง
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
+console.log('API_BASE_URL :>> ', API_BASE_URL);
+
 const api = axios.create({
    baseURL: API_BASE_URL,
    timeout: 30000,
@@ -51,12 +53,14 @@ api.interceptors.response.use(
       if (error.response?.status === 401) {
          // ลบข้อมูลทั้ง localStorage และ IndexedDB
          localStorage.removeItem('loginData')
+         localStorage.removeItem('syncUserData')
          await db.userSession.clear()
+         
 
          // Redirect to login (ถ้าไม่อยู่ในหน้า login อยู่แล้ว)
-         if (window.location.pathname !== '/login') {
-            window.location.href = '/login'
-         }
+         // if (window.location.pathname !== '/login') {
+         window.location.href = '/unauthorized'
+         // }
       }
 
       return Promise.reject(error)

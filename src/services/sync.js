@@ -67,6 +67,11 @@ class SyncService {
 
    async syncToServer() {
       console.log('🔔 syncToServer called')
+      // Check if loginData exists in localStorage
+      if (!localStorage.getItem('loginData')) {
+         console.log('🚫 No loginData in localStorage - skipping sync')
+         return { success: false, reason: 'no_login_data' }
+      }
       if (!isOnline()) {
          console.log('📡 Offline - skipping sync')
          return { success: false, reason: 'offline' }
@@ -103,10 +108,9 @@ class SyncService {
             const batch = unsyncedData.slice(i, i + batchSize)
             console.log('batch :>> ', batch);
 
-            // Prepare FormData for batch
+            // Prepare FormData for batch (no _{idx} in keys)
             const formData = new FormData()
-            batch.forEach((item, idx) => {
-               // Append JSON fields (prefix with index for multiple)
+            batch.forEach((item) => {
                Object.entries(item).forEach(([key, value]) => {
                   if (key === 'photo_file' && value) {
                      // Convert base64 to Blob if needed
@@ -122,13 +126,21 @@ class SyncService {
                         }
                         fileBlob = new Blob([u8arr], { type: mime })
                      }
-                     formData.append(`photo_file_${idx}`, fileBlob, `photo_${item.uid || idx}.jpg`)
+                     formData.append('photo_file', fileBlob, `photo_${item.uid || ''}.jpg`)
                   } else if (key !== 'id') {
                      // Exclude id (local only)
-                     formData.append(`${key}_${idx}`, value == null ? '' : value)
+                     if (key === 'ocr_connected') {
+                        formData.append(key, value == true ? 1 : 0)
+                     } else {
+                        formData.append(key, value == null ? '' : value)
+                     }
                   }
                })
             })
+            // แสดง key-value ทั้งหมดใน formData
+            for (let pair of formData.entries()) {
+               console.log('FormData', pair[0] + ':', pair[1]);
+            }
             formData.append('batch_count', batch.length)
 
             try {

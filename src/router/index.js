@@ -1,5 +1,4 @@
 // src/router/index.js
-import { db } from '@/db'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -9,20 +8,30 @@ const router = createRouter({
          path: '/',
          name: 'history',
          component: () => import('@/views/HistoryView.vue'),
+
          meta: {
             requiresAuth: true,
             title: 'ประวัติการสแกน'
          }
       },
       {
-         path: '/login',
-         name: 'login',
-         component: () => import('@/views/LoginView.vue'),
+         path: '/unauthorized',
+         name: 'unauthorized',
+         component: () => import('@/views/UnauthorizedView.vue'),
          meta: {
             requiresAuth: false,
-            title: 'เข้าสู่ระบบ'
+            title: 'ไม่ได้รับการยืนยัน'
          }
       },
+      // {
+      //    path: '/login',
+      //    name: 'login',
+      //    component: () => import('@/views/LoginView.vue'),
+      //    meta: {
+      //       requiresAuth: false,
+      //       title: 'เข้าสู่ระบบ'
+      //    }
+      // },
       {
          path: '/otp-login',
          name: 'otp-login',
@@ -39,6 +48,15 @@ const router = createRouter({
          meta: {
             requiresAuth: false,
             title: 'ข้อมูลส่วนตัว'
+         }
+      },
+      {
+         path: '/auth/qr',
+         name: 'AuthQr',
+         component: () => import('@/views/OtpProfileView.vue'),
+         meta: {
+            requiresAuth: false,
+            title: 'QR Login'
          }
       },
       {
@@ -82,30 +100,29 @@ const router = createRouter({
 })
 
 // Navigation Guard - ตรวจสอบ Authentication
-router.beforeEach(async (to, from, next) => {
+router.beforeEach((to, from, next) => {
    // ตั้งค่า page title
    document.title = to.meta.title ? `${to.meta.title} - Vehicle Scanner` : 'Vehicle Scanner'
+
+   // ตรวจสอบว่ามี userId ใน localStorage หรือไม่
+   const userIdData = localStorage.getItem('userId')
+   const hasUserId = !!userIdData
 
    // ตรวจสอบว่าต้อง login หรือไม่
    const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
    if (requiresAuth) {
-      // เช็คว่ามี session ใน IndexedDB หรือไม่
-      const session = await db.userSession.get(1)
-
-      if (!session || !session.token) {
-         // ไม่มี session - redirect ไป login
+      if (!hasUserId) {
+         // ไม่มี userId - redirect ไปหน้า /auth/qr เพื่อสมัคร
          next({
-            name: 'otp-login',
-            query: { redirect: to.fullPath } // เก็บ path เดิมไว้
+            name: 'AuthQr',
          })
       } else {
-         // มี session - ผ่าน
+         // มี userId - ผ่าน
          next()
       }
    } else {
-      // ไม่ต้อง auth
-      next()
+         next()
    }
 })
 

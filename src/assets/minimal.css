@@ -1,0 +1,342 @@
+/* src/assets/minimal.css */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+   --color-bg: #FAFAF9;
+   --color-surface: #FFFFFF;
+   --color-surface-alt: #F5F5F4;
+   --color-border: #E7E5E4;
+   --color-border-light: #F0EEEC;
+   --color-text: #1C1917;
+   --color-text-secondary: #78716C;
+   --color-text-tertiary: #A8A29E;
+   --color-primary: #1C1917;
+   --color-success: #16A34A;
+   --color-success-light: #F0FDF4;
+   --color-success-bg: #DCFCE7;
+   --color-warning: #D97706;
+   --color-warning-light: #FFFBEB;
+   --color-warning-bg: #FEF3C7;
+   --color-error: #DC2626;
+   --radius-sm: 10px;
+   --radius-md: 14px;
+   --radius-lg: 16px;
+}
+
+* {
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+   font-family: 'Noto Sans Thai', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
+   background: var(--color-bg) !important;
+}
+
+.v-application {
+   font-family: 'Noto Sans Thai', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Override Vuetify defaults for minimal look */
+.v-card {
+   border-radius: var(--radius-md) !important;
+}
+
+.v-text-field .v-field {
+   border-radius: var(--radius-sm) !important;
+}
+
+.v-btn {
+   text-transform: none !important;
+   letter-spacing: 0 !important;
+   font-weight: 600 !important;
+}
+
+/* Stat box */
+.stat-box {
+   background: var(--color-surface);
+   border: 1px solid var(--color-border);
+   border-radius: var(--radius-md);
+   padding: 14px 16px;
+}
+
+.stat-box__label {
+   font-size: 11px;
+   font-weight: 600;
+   color: var(--color-text-tertiary);
+   letter-spacing: 0.05em;
+   text-transform: uppercase;
+   margin-bottom: 4px;
+}
+
+.stat-box__value {
+   font-size: 28px;
+   font-weight: 700;
+   line-height: 1;
+}
+
+/* History card */
+.history-card {
+   background: var(--color-surface);
+   border: 1px solid var(--color-border);
+   border-radius: var(--radius-md);
+   padding: 14px 16px;
+   display: flex;
+   align-items: center;
+   gap: 14px;
+   transition: border-color 0.2s ease;
+   cursor: pointer;
+}
+
+.history-card:active {
+   border-color: var(--color-text-tertiary);
+}
+
+.history-card__thumb {
+   width: 56px;
+   height: 56px;
+   border-radius: var(--radius-sm);
+   background: var(--color-surface-alt);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+   overflow: hidden;
+}
+
+.history-card__thumb img {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+}
+
+.history-card__plate {
+   font-size: 17px;
+   font-weight: 700;
+   color: var(--color-text);
+   letter-spacing: 0.02em;
+}
+
+.history-card__sticker {
+   font-size: 13px;
+   font-weight: 600;
+   color: var(--color-text-secondary);
+}
+
+.history-card__province {
+   font-size: 13px;
+   color: var(--color-text-tertiary);
+}
+
+.history-card__time {
+   font-size: 12px;
+   color: var(--color-text-tertiary);
+}
+
+.sync-dot {
+   width: 7px;
+   height: 7px;
+   border-radius: 50%;
+   display: inline-block;
+   flex-shrink: 0;
+}
+
+.sync-dot--synced {
+   background: var(--color-success);
+}
+
+.sync-dot--pending {
+   background: var(--color-warning);
+}
+
+/* Menu list item */
+.menu-item {
+   display: flex;
+   align-items: center;
+   gap: 14px;
+   padding: 15px 18px;
+   cursor: pointer;
+   transition: background 0.15s ease;
+   font-size: 15px;
+   font-weight: 500;
+   color: var(--color-text);
+}
+
+.menu-item:active {
+   background: var(--color-surface-alt);
+}
+
+.menu-item--warning {
+   color: var(--color-warning);
+}
+
+.menu-item--error {
+   color: var(--color-error);
+}
+
+.menu-divider {
+   height: 1px;
+   background: var(--color-border-light);
+   margin: 0 18px;
+}
+
+/* User card */
+.user-card {
+   background: var(--color-surface);
+   border: 1px solid var(--color-border);
+   border-radius: var(--radius-lg);
+   padding: 18px 20px;
+   display: flex;
+   align-items: center;
+   gap: 14px;
+}
+
+.user-card__avatar {
+   width: 48px;
+   height: 48px;
+   border-radius: 50%;
+   background: var(--color-primary);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+}
+
+.user-card__name {
+   font-size: 16px;
+   font-weight: 700;
+   color: var(--color-text);
+}
+
+.user-card__username {
+   font-size: 13px;
+   color: var(--color-text-tertiary);
+}
+
+.status-badge {
+   font-size: 11px;
+   font-weight: 600;
+   padding: 4px 10px;
+   border-radius: 20px;
+}
+
+.status-badge--online {
+   color: var(--color-success);
+   background: var(--color-success-light);
+}
+
+.status-badge--offline {
+   color: var(--color-warning);
+   background: var(--color-warning-light);
+}
+
+/* Page header */
+.page-header {
+   padding: 18px 20px 14px;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+}
+
+.page-header__title {
+   font-size: 22px;
+   font-weight: 800;
+   color: var(--color-text);
+   letter-spacing: -0.02em;
+}
+
+/* Bottom nav override */
+.minimal-bottom-nav {
+   background: var(--color-surface) !important;
+   border-top: 1px solid var(--color-border) !important;
+   box-shadow: none !important;
+   height: 68px !important;
+}
+
+.minimal-bottom-nav .v-btn {
+   color: var(--color-text-tertiary) !important;
+}
+
+.minimal-bottom-nav .v-btn--active {
+   color: var(--color-text) !important;
+}
+
+/* Scan button in nav */
+.scan-btn-nav {
+   width: 48px !important;
+   height: 48px !important;
+   border-radius: 50% !important;
+   background: var(--color-primary) !important;
+   color: white !important;
+   margin-top: -8px;
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* App bar override */
+.minimal-app-bar {
+   background: var(--color-bg) !important;
+   border: none !important;
+   box-shadow: none !important;
+}
+
+/* Success popup */
+.success-overlay {
+   background: var(--color-success) !important;
+}
+
+/* Form styling */
+.minimal-form .v-field__outline {
+   border-radius: var(--radius-sm) !important;
+}
+
+.minimal-form .v-label {
+   font-size: 12px !important;
+   font-weight: 600 !important;
+   color: var(--color-text-secondary) !important;
+}
+
+/* Loading spinner */
+@keyframes minimal-spin {
+   to { transform: rotate(360deg); }
+}
+
+.minimal-spinner {
+   width: 64px;
+   height: 64px;
+   border-radius: 50%;
+   border: 3px solid var(--color-border);
+   border-top-color: var(--color-text);
+   animation: minimal-spin 0.8s linear infinite;
+}
+
+/* Empty state */
+.empty-state {
+   text-align: center;
+   padding: 48px 24px;
+}
+
+.empty-state__icon {
+   color: var(--color-text-tertiary);
+   margin-bottom: 12px;
+}
+
+.empty-state__text {
+   font-size: 15px;
+   color: var(--color-text-tertiary);
+}
+
+/* Image dialog */
+.v-dialog .v-card {
+   border-radius: var(--radius-lg) !important;
+}
+
+/* Snackbar */
+.v-snackbar__content {
+   font-family: 'Noto Sans Thai', sans-serif !important;
+}
+
+/* Remove all elevation/shadow from cards globally */
+.v-card--variant-elevated,
+.v-card--variant-flat {
+   box-shadow: none !important;
+}

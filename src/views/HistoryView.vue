@@ -1,108 +1,89 @@
 <template>
-   <v-container>
-      <v-card elevation="0">
-         <!-- <v-card-title class="d-flex align-center mb-5">
-            <v-icon left>mdi-history</v-icon>
-            ประวัติการสแกน
-            <v-spacer />
-            <v-chip :color="unsyncedCount > 0 ? 'warning' : 'success'" size="small">
-               รอซิงค์: {{ unsyncedCount }}
-            </v-chip>
-         </v-card-title> -->
+   <v-container class="px-5 pt-2">
+      <!-- Stats Row -->
+      <!-- <div class="d-flex mb-5" style="gap: 10px;">
+         <div class="stat-box flex-grow-1">
+            <div class="stat-box__label">วันนี้</div>
+            <div class="stat-box__value" style="color: var(--color-text);">{{ todayCount }}</div>
+         </div>
+         <div class="stat-box flex-grow-1">
+            <div class="stat-box__label">รอซิงค์</div>
+            <div class="stat-box__value" style="color: var(--color-warning);">{{ unsyncedCount }}</div>
+         </div>
+         <div class="stat-box flex-grow-1">
+            <div class="stat-box__label">สำเร็จ</div>
+            <div class="stat-box__value" style="color: var(--color-success);">{{ syncedCount }}</div>
+         </div>
+      </div> -->
 
-         <v-card-text class="ma-0 pa-0">
-            <!-- Loading -->
-            <v-progress-linear v-if="loading" indeterminate class="mb-4" />
+      <!-- Loading -->
+      <div v-if="loading" class="d-flex justify-center py-8">
+         <div class="minimal-spinner"></div>
+      </div>
 
-            <!-- No Data -->
-            <div v-if="!loading && items.length === 0" class="text-center py-8">
-               <v-icon size="64" color="grey">mdi-inbox</v-icon>
-               <p class="text-grey mt-2">ไม่พบข้อมูล</p>
+      <!-- Empty State -->
+      <div v-else-if="items.length === 0" class="empty-state">
+         <v-icon size="56" class="empty-state__icon">mdi-inbox-outline</v-icon>
+         <p class="empty-state__text">ยังไม่มีประวัติการสแกน</p>
+      </div>
+
+      <!-- History List -->
+      <div v-else class="d-flex flex-column" style="gap: 8px;">
+         <div
+            v-for="item in items"
+            :key="item.id"
+            class="history-card"
+            @click="openImageDialog(item.photo_file)"
+         >
+            <!-- Thumbnail -->
+            <div class="history-card__thumb">
+               <template v-if="item.photo_file">
+                  <img
+                     v-if="item.imageLoaded"
+                     :src="item.photo_file"
+                     alt=""
+                  />
+                  <v-icon v-else size="22" color="#A8A29E">mdi-image-outline</v-icon>
+                  <img
+                     v-if="!item.imageLoaded"
+                     :src="item.photo_file"
+                     style="display:none; position:absolute;"
+                     @load="item.imageLoaded = true"
+                  />
+               </template>
+               <v-icon v-else size="22" color="#A8A29E">mdi-image-off-outline</v-icon>
             </div>
 
-            <!-- Card List -->
-            <div v-else>
-               <v-card v-for="item in items" :key="item.id" class="mb-1" elevation="0" variant="flat"
-                  style="border-radius: 12px; border-color: gray;">
-                  <div class="d-flex">
-                     <!-- Image Thumbnail -->
-                     <div class="pa-2 align-center d-flex justify-center">
-                        <div class="" style="width: 100px; height: 100px;">
-                           <template v-if="item.photo_file">
-                              <v-skeleton-loader v-if="!item.imageLoaded" type="image" height="100" class="rounded-lg"
-                                 style="width: 100px; height: 100px;" />
-                              <v-img v-if="item.imageLoaded" :src="item.photo_file" cover height="100"
-                                 class="rounded-lg" style="cursor: pointer;"
-                                 @click="openImageDialog(item.photo_file)" />
-                              <img v-if="!item.imageLoaded" :src="item.photo_file" style="display:none"
-                                 @load="item.imageLoaded = true" />
-                           </template>
-                           <div v-else class="bg-grey-lighten-3 d-flex align-center justify-center"
-                              style="height: 100px;">
-                              <v-icon size="38" color="grey-lighten-1">mdi-image-off</v-icon>
-                           </div>
-                        </div>
-                     </div>
-
-                     <!-- Content -->
-                     <div class="flex-grow-1 d-flex flex-column">
-                        <v-card-text class="pa-3 flex-grow-1">
-                           <div class="d-flex align-center justify-space-between mb-3">
-                              <!-- <v-icon :color="item.manualEntry ? 'orange' : 'primary'" size="small" class="mr-2">
-                                 {{ item.manualEntry ? 'mdi-keyboard' : 'mdi-camera' }}
-                              </v-icon> -->
-                              <div>
-                                 <p class="text-subtitle-1 pb-0 font-weight-bold">{{ item.plate_no || item.plateNumber
-                                    }}
-                                 </p>
-                                 <p class="text-subtitle-2 font-weight-bold text-medium-emphasis text-truncate">{{
-                                    item.plate_province }}
-                                 </p>
-                              </div>
-
-                              <!-- <v-icon size="x-small" class="mr-1" color="primary">mdi-sticker</v-icon> -->
-                              <span class="font-weight-bold text-body-2">{{ item.sticker_no }}</span>
-                           </div>
-
-
-
-                           <div class="text-body-2 d-flex justify-space-between align-center">
-
-                              <span class="text-grey text-caption">{{ formatDate(item.timestamp) }}</span>
-                              <v-spacer />
-                              <v-chip :color="item.synced ? 'success' : 'warning'" size="x-small" variant="flat">
-                                 {{ item.synced ? 'ซิงค์แล้ว' : 'รอซิงค์' }}
-                              </v-chip>
-                           </div>
-                        </v-card-text>
-
-                        <!-- Actions -->
-                        <!-- <v-card-actions class="pa-2 pt-0">
-                           <v-btn variant="text" size="x-small" color="primary" @click="viewDetails(item)">
-                              <v-icon size="small">mdi-eye</v-icon>
-                           </v-btn>
-                           <v-btn variant="text" size="x-small" color="error" @click="deleteItem(item)">
-                              <v-icon size="small">mdi-delete</v-icon>
-                           </v-btn>
-                        </v-card-actions> -->
-                     </div>
+            <!-- Content -->
+            <div style="flex: 1; min-width: 0;">
+               <div class="d-flex align-center justify-space-between mb-1">
+                  <span class="history-card__plate">
+                     {{ item.plate_no || item.plateNumber }}
+                  </span>
+                  <span class="history-card__sticker">
+                     #{{ item.sticker_no }}
+                  </span>
+               </div>
+               <div class="d-flex align-center justify-space-between">
+                  <span class="history-card__province text-truncate" style="max-width: 140px;">
+                     {{ item.plate_province }}
+                  </span>
+                  <div class="d-flex align-center" style="gap: 6px;">
+                     <span class="history-card__time">{{ formatTime(item.timestamp) }}</span>
+                     <span class="sync-dot" :class="item.synced ? 'sync-dot--synced' : 'sync-dot--pending'"></span>
                   </div>
-               </v-card>
+               </div>
             </div>
-         </v-card-text>
-      </v-card>
+         </div>
+      </div>
 
       <!-- Image Dialog -->
-      <v-dialog v-model="imageDialog" max-width="800">
-         <v-card>
-
+      <v-dialog v-model="imageDialog" max-width="600">
+         <v-card style="border-radius: 16px; overflow: hidden;">
             <v-card-text class="pa-0">
                <v-img :src="selectedImage" contain />
             </v-card-text>
          </v-card>
-         <!-- <v-btn icon size="small" @click="imageDialog = false">
-            <v-icon>mdi-close</v-icon>
-         </v-btn> -->
       </v-dialog>
    </v-container>
 </template>
@@ -119,15 +100,22 @@ const items = ref([])
 const imageDialog = ref(false)
 const selectedImage = ref('')
 
+// const unsyncedCount = computed(() => {
+//    return items.value.filter((item) => item.synced === 0).length
+// })
 
-const unsyncedCount = computed(() => {
-   return items.value.filter((item) => item.synced === 0).length
-})
+// const syncedCount = computed(() => {
+//    return items.value.filter((item) => item.synced === 1).length
+// })
+
+// const todayCount = computed(() => {
+//    const today = new Date()
+//    today.setHours(0, 0, 0, 0)
+//    return items.value.filter((item) => new Date(item.timestamp) >= today).length
+// })
 
 onMounted(async () => {
    await loadData()
-   // await loadData() // Moved to successPopup event handler
-   // Listen for successPopup close event
    window.addEventListener('successPopupClosed', () => {
       setTimeout(() => {
          loadData()
@@ -138,8 +126,7 @@ onMounted(async () => {
 const loadData = async () => {
    loading.value = true
    try {
-      const data = await db.scannedPlates.orderBy('timestamp').reverse().limit(5).toArray()
-      // เพิ่ม property imageLoaded สำหรับแต่ละ item
+      const data = await db.scannedPlates.orderBy('timestamp').reverse().limit(6).toArray()
       items.value = data.map(item => ({ ...item, imageLoaded: false }))
    } catch (error) {
       console.error('Load data error:', error)
@@ -149,12 +136,8 @@ const loadData = async () => {
    }
 }
 
-// In App.vue, after successPopup.value = false, dispatch event for listeners
-// window.dispatchEvent(new CustomEvent('successPopupClosed'))
-
-const formatDate = (date) => {
+const formatTime = (date) => {
    return new Date(date).toLocaleString('th-TH', {
-      year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
@@ -162,24 +145,8 @@ const formatDate = (date) => {
    })
 }
 
-const viewDetails = (item) => {
-   alert(JSON.stringify(item, null, 2))
-}
-
-const deleteItem = async (item) => {
-   if (!confirm(`ต้องการลบทะเบียน ${item.plate_no || item.plateNumber} ?`)) return
-
-   try {
-      await db.scannedPlates.delete(item.id)
-      await loadData()
-      showSnackbar('ลบข้อมูลสำเร็จ', 'success')
-   } catch (error) {
-      console.error('Delete error:', error)
-      showSnackbar('เกิดข้อผิดพลาดในการลบข้อมูล', 'error')
-   }
-}
-
 const openImageDialog = (imageUrl) => {
+   if (!imageUrl) return
    selectedImage.value = imageUrl
    imageDialog.value = true
 }

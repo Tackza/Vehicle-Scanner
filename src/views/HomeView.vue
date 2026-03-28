@@ -1,18 +1,25 @@
 <!-- src/views/HomeView.vue -->
 <template>
-   <v-container class="fill-height" fluid>
-      <v-alert v-if="!online" type="warning" prominent border="start" class="mb-4">
-         <v-row align="center">
-            <v-col class="grow">
-               <div class="text-h6">โหมดออฟไลน์</div>
-               <div>ไม่สามารถใช้ OCR อัตโนมัติได้ กรุณากรอกข้อมูลเอง</div>
-            </v-col>
-         </v-row>
-      </v-alert>
+   <v-container class="fill-height" fluid style="background: var(--color-bg);">
+      <!-- Offline Alert -->
+      <div v-if="!online" class="mx-4 mb-4"
+         style="background: var(--color-warning-light); border: 1px solid var(--color-warning-bg); border-radius: var(--radius-lg); padding: 16px 20px;">
+         <div class="d-flex align-center" style="gap: 10px;">
+            <v-icon size="20" color="#D97706">mdi-wifi-off</v-icon>
+            <div>
+               <div style="font-size: 15px; font-weight: 600; color: var(--color-text);">โหมดออฟไลน์</div>
+               <div style="font-size: 13px; color: var(--color-text-secondary);">ไม่สามารถใช้ OCR อัตโนมัติได้
+                  กรุณากรอกข้อมูลเอง</div>
+            </div>
+         </div>
+      </div>
 
+      <!-- Loading Overlay -->
       <v-overlay :model-value="loading" class="align-center justify-center" contained>
-         <v-progress-circular indeterminate size="64" color="primary" />
-         <div class="mt-4 text-h6">กำลังประมวลผล...</div>
+         <div class="text-center">
+            <div class="minimal-spinner mx-auto mb-4"></div>
+            <div style="font-size: 16px; font-weight: 600; color: white;">กำลังประมวลผล...</div>
+         </div>
       </v-overlay>
 
       <CameraCapture @result="handleOCRResult" @manual-input="handleManualInputRequest" @loading="loading = $event" />
@@ -47,26 +54,28 @@ const manualInputMessage = ref('')
 const online = useOnline()
 const { showSnackbar } = useSnackbar()
 
-// ดูการเปลี่ยนแปลงของ showManualInputDialog เพื่อควบคุม navigation bar
+// Project info
+const projectId = ref(null)
+
 watch(showManualInputDialog, (newVal) => {
    if (newVal) {
-      // ซ่อน navigation bar เมื่อเปิด dialog
       window.dispatchEvent(new CustomEvent('toggleNavBar', { detail: { hide: true } }))
    } else {
-      // แสดง navigation bar เมื่อปิด dialog
       window.dispatchEvent(new CustomEvent('toggleNavBar', { detail: { hide: false } }))
    }
 })
 
-onMounted(() => {
-   // ฟัง event จาก App.vue เมื่อกดปุ่มสแกน
+
+onMounted(async () => {
+   await fetchProject()
+   if (!projectId.value) {
+      // แจ้งเตือนและ redirect ไปหน้า Settingsถ้าไม่มีโครงการ
+      showSnackbar('กรุณาตั้งค่าโครงการก่อนใช้งาน', 'error')
+      router.push('/settings')
+      return
+   }
    window.addEventListener('cameraResult', handleCameraResultEvent)
-
-   // ป้องกันการกดปุ่มย้อนกลับของ browser
-   // เพิ่ม state ใหม่เข้า history เพื่อดัก popstate
    window.history.pushState({ preventBack: true }, '', window.location.href)
-
-
 })
 
 onUnmounted(() => {
@@ -83,19 +92,18 @@ const handleOCRResult = (result) => {
    currentGPS.value = result.gps
 
    if (result.success) {
-      // OCR สำเร็จ - แสดงฟอร์มเพื่อกรอกเลขสติกเกอร์
       plateData.value = {
          plateNumber: result.plateNumber,
          province: result.province
       }
-      manualInputTitle.value = '✓ อ่านป้ายทะเบียนสำเร็จ'
+      manualInputTitle.value = 'อ่านป้ายทะเบียนสำเร็จ'
       manualInputMessage.value = 'กรุณาตรวจสอบข้อมูลและกรอกเลขสติกเกอร์'
       showManualInputDialog.value = true
    } else if (result.requireManualInput) {
       plateData.value = null
       manualInputTitle.value = result.offline
-         ? '⚠️ ไม่มีอินเทอร์เน็ต'
-         : '⚠️ ไม่สามารถอ่านป้ายทะเบียนได้'
+         ? 'ไม่มีอินเทอร์เน็ต'
+         : 'ไม่สามารถอ่านป้ายทะเบียนได้'
       manualInputMessage.value = result.message
       showManualInputDialog.value = true
    }
@@ -109,7 +117,13 @@ const handleManualInputRequest = ({ gps }) => {
    showManualInputDialog.value = true
 }
 
+
 const handleManualSubmit = async (data) => {
+   if (!projectId.value) {
+      showSnackbar('ไม่พบโครงการที่ใช้งานอยู่ กรุณาตั้งค่าโครงการก่อน', 'error')
+      router.push('/settings')
+      return
+   }
    setTimeout(async () => {
       await saveData(data)
    }, 2000);
@@ -119,36 +133,38 @@ const saveData = async (data) => {
    loading.value = true
 
    try {
-      // ดึง user.id จาก session
+      // ตรวจสอบ projectId ก่อนบันทึก
+      if (!projectId.value) {
+         showSnackbar('ไม่พบโครงการที่ใช้งานอยู่ กรุณาตั้งค่าโครงการก่อน', 'error')
+         router.push('/settings')
+         loading.value = false
+         return
+      }
+
       const session = await db.userSession.get(1)
 
-      // แปลง GPS เป็น plain object และ clean data
       const cleanData = {
          uid: generateUID(),
-         project_id: 1, // กำหนด project_id เป็น 1 สำหรับตอนนี้
-         // ข้อมูลที่ได้จาก OCR (ค่าเดิม)
+         project_id: projectId.value,
          detect_plate_no: data.ocrData?.plateNumber || null,
          detect_plate_province: data.ocrData?.province || null,
-         // ข้อมูลสุดท้ายที่บันทึก (อาจถูกแก้ไข)
          plate_no: data.plateNumber,
          plate_province: data.province || '',
-         // สถานะการแก้ไข
          ocr_connected: !online.value,
          is_manual: data.isEdited ? 1 : 0,
          photo_file: data.image,
          sticker_no: data.stickerNumber || '',
          lat: data.gps?.latitude || null,
          long: data.gps?.longitude || null,
-         created_at: Date.now(),
+         created_at: new Date().toISOString(),
          created_by: session?.userData?.id || null,
          synced: 0,
          timestamp: Date.now()
       }
 
-      // บันทึกลง IndexedDB
       await db.scannedPlates.add(cleanData)
 
-      showSnackbar('✓ บันทึกสำเร็จ', 'success')
+      showSnackbar('บันทึกสำเร็จ', 'success')
       resetToCapture()
    } catch (error) {
       console.error('Save error:', error)
@@ -158,6 +174,21 @@ const saveData = async (data) => {
    }
 }
 
+// Fetch project info from API
+// Fetch project info from local db
+async function fetchProject() {
+   try {
+      const localProjects = await db.projects.toArray()
+      if (localProjects.length > 0) {
+         const project = localProjects[0]
+         projectId.value = project.project_id
+      } else {
+         projectId.value = null
+      }
+   } catch (e) {
+      projectId.value = null
+   }
+}
 
 const navigateHome = () => {
    router.push('/')
@@ -169,7 +200,7 @@ const resetToCapture = () => {
    capturedImage.value = null
    currentGPS.value = null
    router.push('/')
-   // router.push('/') // Navigation now handled by navigateHome event
 }
+
 
 </script>

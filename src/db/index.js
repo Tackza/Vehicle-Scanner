@@ -15,9 +15,12 @@ db.version(4).stores({
    syncQueue: '++id, action, data, retryCount, createdAt, status',
 
    // User session
-   userSession: 'id, token, userData'
+   userSession: 'id, token, userData',
+
+   // Projects
+   projects: 'project_id, name, start_time, end_time'
 }).upgrade(async (trans) => {
-   console.log('✓ Database upgraded to version 4 - added local_id field')
+   console.log('✓ Database upgraded to version 4 - added local_id field and projects store')
 })
 
 // Version 3: เพิ่ม uid field

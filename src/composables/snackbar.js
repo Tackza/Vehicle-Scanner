@@ -5,12 +5,12 @@ const snackbar = ref({
    show: false,
    message: '',
    color: 'success',
-   timeout: 3000,
+   timeout: 5000,
    position: 'bottom'
 })
 
 export const useSnackbar = () => {
-   const showSnackbar = (message, color = 'success', timeout = 3000) => {
+   const showSnackbar = (message, color = 'success', timeout = 5000) => {
       snackbar.value = {
          show: true,
          message,

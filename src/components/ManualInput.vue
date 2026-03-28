@@ -1,70 +1,84 @@
 <template>
    <v-dialog v-model="dialogOpen" fullscreen transition="dialog-bottom-transition">
-      <v-card>
-         <!-- Dialog Content -->
-         <v-card-text class="mt-6">
-            <!-- Title -->
-            <!-- <div class="text-h5 font-weight-bold text-center mb-2">
-               {{ title }}
-            </div> -->
+      <v-card style="background: var(--color-bg);">
+         <v-card-text class="px-5 pt-8">
+            <!-- Status badge -->
+            <div v-if="initialData?.plateNumber" class="mb-5"
+               style="background: var(--color-success-light); border: 1px solid var(--color-success-bg); border-radius: var(--radius-lg); padding: 16px 20px;">
+               <div class="d-flex align-center mb-2" style="gap: 8px;">
+                  <div
+                     style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-success); display: flex; align-items: center; justify-content: center;">
+                     <v-icon size="16" color="white">mdi-check</v-icon>
+                  </div>
+                  <span
+                     style="font-size: 14px; font-weight: 600; color: var(--color-success);">อ่านป้ายทะเบียนสำเร็จ</span>
+               </div>
+               <div style="font-size: 24px; font-weight: 800; color: var(--color-text); letter-spacing: 0.03em;">
+                  {{ initialData.plateNumber }}
+               </div>
+               <div v-if="initialData.province"
+                  style="font-size: 14px; color: var(--color-text-secondary); margin-top: 2px;">
+                  {{ initialData.province }}
+               </div>
+            </div>
 
-            <!-- Message -->
-            <v-card-subtitle v-if="message" class="text-subtitle-2 text-center mb-4">
-               {{ message }}
-            </v-card-subtitle>
+            <!-- No OCR result -->
+            <div v-else-if="message" class="mb-5"
+               style="background: var(--color-warning-light); border: 1px solid var(--color-warning-bg); border-radius: var(--radius-lg); padding: 16px 20px;">
+               <div class="d-flex align-center" style="gap: 8px;">
+                  <v-icon size="20" color="#D97706">mdi-alert-circle-outline</v-icon>
+                  <span style="font-size: 14px; font-weight: 500; color: var(--color-warning);">{{ message }}</span>
+               </div>
+            </div>
 
             <!-- Image Preview -->
-            <v-img v-if="image" :src="image" class="mb-6 rounded" max-height="200" cover />
-
-            <!-- OCR Result Display -->
-            <!-- <v-alert v-if="initialData?.plateNumber || initialData?.province" type="success" density="comfortable"
-               class="mb-6" border="start">
-               <div class="d-flex align-center gap-2 mb-2">
-                  <v-icon>mdi-check-circle</v-icon>
-                  <span class="text-subtitle-1 font-weight-bold">ผลการอ่านป้ายทะเบียน</span>
-               </div>
-               <div v-if="initialData?.plateNumber" class="mb-2 ml-7">
-                  <strong>เลขทะเบียน:</strong>
-                  <span class="text-h6 text-primary ml-2">{{ initialData.plateNumber }}</span>
-               </div>
-               <div v-if="initialData?.province" class="ml-7">
-                  <strong>จังหวัด:</strong>
-                  <span class="text-subtitle-2 text-primary ml-2">{{ initialData.province }}</span>
-               </div>
-            </v-alert> -->
+            <div v-if="image" class="mb-5"
+               style="border-radius: var(--radius-md); overflow: hidden; height: 160px; background: linear-gradient(135deg, #e8e6e3, #d6d3cf);">
+               <v-img :src="image" cover height="160" />
+            </div>
 
             <!-- Form -->
-            <v-form ref="form" @submit.prevent="handleSubmit">
-               <v-text-field v-model="formData.plateNumber" label="ทะเบียนรถ *" placeholder="เช่น 1กก1234 "
-                  variant="outlined" :rules="[rules.required, rules.noSpecialChars, rules.noSpaces]"
-                  @input="onPlateNumberInput" />
+            <v-form ref="form" @submit.prevent="handleSubmit" class="minimal-form">
+               <div class="mb-4">
+                  <label
+                     style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 6px; letter-spacing: 0.03em;">ทะเบียนรถ
+                     *</label>
+                  <v-text-field v-model="formData.plateNumber" placeholder="เช่น 1กก1234"
+                     :rules="[rules.required, rules.noSpecialChars, rules.noSpaces]" @input="onPlateNumberInput"
+                     hide-details="auto" density="comfortable" />
+               </div>
 
-               <v-autocomplete v-model="formData.province" label="จังหวัด" placeholder="ค้นหาจังหวัด" variant="outlined"
-                  class="mt-3" :items="provinces" clearable />
+               <div class="mb-4">
+                  <label
+                     style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 6px; letter-spacing: 0.03em;">จังหวัด</label>
+                  <v-autocomplete v-model="formData.province" placeholder="ค้นหาจังหวัด" :items="provinces" clearable
+                     hide-details="auto" density="comfortable" />
+               </div>
 
-
-               <v-text-field v-model="formData.stickerNumber" label="เลขสติกเกอร์ *" variant="outlined" class="mt-3"
-                  :rules="[rules.required, rules.numeric]" type="number" min="1" step="1" @input="onStickerInput" />
+               <div class="mb-4">
+                  <label
+                     style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 6px; letter-spacing: 0.03em;">เลขสติกเกอร์
+                     *</label>
+                  <v-text-field v-model="formData.stickerNumber" placeholder="เช่น 00456"
+                     :rules="[rules.required, rules.numeric]" type="number" min="1" step="1" @input="onStickerInput"
+                     hide-details="auto" density="comfortable" />
+               </div>
             </v-form>
          </v-card-text>
 
-         <!-- Dialog Actions -->
-         <v-card-actions class="pa-4">
-            <v-btn color="grey" variant="outlined" @click="handleCancel" width="120">
-               <v-icon left>mdi-close</v-icon>
+         <!-- Actions -->
+         <v-card-actions class="px-5 pb-6 pt-2">
+            <v-btn variant="outlined" @click="handleCancel" rounded="lg" size="large"
+               style="flex: 1; font-weight: 600; border-color: var(--color-border); color: var(--color-text-secondary);">
                ยกเลิก
             </v-btn>
-            <v-spacer></v-spacer>
-            <v-btn color="primary" variant="elevated" @click="handleSubmit" :loading="loading" :disabled="!isFormValid"
-               width="120">
-               <v-icon left>mdi-check</v-icon>
+            <v-btn @click="handleSubmit" :loading="loading" :disabled="!isFormValid" rounded="lg" size="large"
+               style="flex: 2; font-weight: 700; background-color: #000; color: #fff; border-color: #000;">
                บันทึก
             </v-btn>
          </v-card-actions>
       </v-card>
    </v-dialog>
-
-   <!-- Success Popup moved to App.vue -->
 </template>
 
 <script setup>
@@ -78,22 +92,14 @@ const props = defineProps({
    gps: Object,
    initialData: Object
 })
-console.log('props :>> ', props);
 
 const emit = defineEmits(['update:modelValue', 'submit', 'cancel'])
 
 const form = ref(null)
 const loading = ref(false)
 const dialogOpen = ref(props.modelValue)
-const successPopup = ref(false)
 const successTimeout = ref(null)
 
-const playSuccessSound = () => {
-   const audio = new Audio('/success.mp3') // ใช้ไฟล์เสียงจาก public
-   audio.play()
-}
-
-// List of Thai provinces
 const provinces = [
    'กรุงเทพมหานคร', 'กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร',
    'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท',
@@ -113,7 +119,6 @@ const provinces = [
    'อุทัยธานี', 'อุบลราชธานี', 'เบตง'
 ];
 
-
 const formData = reactive({
    plateNumber: props.initialData?.plateNumber || '',
    province: props.initialData?.province || '',
@@ -122,26 +127,21 @@ const formData = reactive({
 })
 
 onMounted(() => {
-   // Load lastStickerNumber from localStorage if not set
    if (!formData.stickerNumber) {
       const lastSticker = localStorage.getItem('lastStickerNumber')
-      console.log('lastSticker :>> ', lastSticker);
       if (lastSticker) {
          formData.stickerNumber = lastSticker
       }
    }
 })
 
-// Update formData when initialData changes
 watch(() => props.initialData, (newInitialData) => {
    if (newInitialData) {
       formData.plateNumber = newInitialData.plateNumber || ''
       formData.province = newInitialData.province || ''
-
    }
 }, { deep: true })
 
-// Sync dialog state
 watch(() => props.modelValue, (newVal) => {
    dialogOpen.value = newVal
 })
@@ -152,20 +152,11 @@ watch(dialogOpen, (newVal) => {
 
 const rules = {
    required: (v) => !!v || 'กรุณากรอกข้อมูล',
-   plateFormat: (v) => {
-      const patterns = [
-         /^[0-9][ก-ฮ]{2}[0-9]{1,4}$/,
-         /^[ก-ฮ]{2}-?[0-9]{1,4}$/,
-         /^[A-Z]{2,3}[0-9]{1,4}$/
-      ]
-      return patterns.some((p) => p.test(v)) || 'รูปแบบทะเบียนไม่ถูกต้อง'
-   },
    noSpecialChars: (v) => !/[!@#$%^&*()_+=\[\]{};':",.<>?/\\|`~]/.test(v) || 'ห้ามใส่สัญลักษณ์พิเศษ',
    noSpaces: (v) => !/\s/.test(v) || 'ห้ามเว้นวรรค',
    numeric: (v) => (/^\d+$/.test(v) ? true : 'กรอกเฉพาะตัวเลข')
 }
 
-// Computed property to check if form is valid
 const isFormValid = computed(() => {
    const plateValid = formData.plateNumber &&
       rules.required(formData.plateNumber) === true &&
@@ -180,14 +171,12 @@ const isFormValid = computed(() => {
 })
 
 function onPlateNumberInput(e) {
-   // Allow only Thai characters (ก-ฮ) and numbers (0-9)
    if (typeof formData.plateNumber === 'string') {
       formData.plateNumber = formData.plateNumber.replace(/[^ก-ฮ0-9]/g, '')
    }
 }
 
 function onStickerInput(e) {
-   // Remove non-numeric characters if pasted
    if (typeof formData.stickerNumber === 'string') {
       formData.stickerNumber = formData.stickerNumber.replace(/\D/g, '')
    }
@@ -201,12 +190,10 @@ const handleSubmit = async () => {
    const initialPlateNumber = props.initialData?.plateNumber || ''
    const initialProvince = props.initialData?.province || ''
 
-   // เช็คว่ามีการแก้ไขข้อมูลหรือไม่
    const isEdited = props.initialData
       ? (formData.plateNumber.trim() !== initialPlateNumber ||
          formData.province.trim() !== initialProvince)
       : true
-
 
    emit('submit', {
       ...formData,
@@ -215,7 +202,6 @@ const handleSubmit = async () => {
       gps: props.gps,
       image: props.image,
       manualEntry: true,
-      // ส่งข้อมูล OCR เดิมด้วย
       ocrData: props.initialData ? {
          plateNumber: props.initialData.plateNumber || '',
          province: props.initialData.province || ''
@@ -223,7 +209,6 @@ const handleSubmit = async () => {
       isEdited: isEdited
    })
 
-   // Auto-increment stickerNumber for next entry if it's a valid number
    let nextSticker = parseInt(formData.stickerNumber, 10)
    if (!isNaN(nextSticker)) {
       nextSticker++
@@ -234,12 +219,10 @@ const handleSubmit = async () => {
 
    loading.value = false
 
-   // Show global success popup
    window.dispatchEvent(new CustomEvent('showSuccessPopup'))
-   emit('navigateHome') // Emit event to navigate immediately
+   emit('navigateHome')
    successTimeout.value = setTimeout(() => {
       dialogOpen.value = false
-      // Set stickerNumber for next entry (if dialog is opened again)
       formData.stickerNumber = nextSticker ? String(nextSticker) : ''
    }, 2000)
 }

@@ -1,15 +1,15 @@
 <template>
-   <v-container class="fill-height" fluid>
+   <v-container class="fill-height" fluid style="position: relative; min-height: 100vh;">
       <v-row align="center" justify="center">
-         <v-col cols="12" sm="8" md="4">
-            <v-card class="elevation-0">
-               <v-card-text class="text-center">
-                  <v-progress-circular indeterminate color="primary" size="80"
-                     class="mx-auto mb-4"></v-progress-circular>
-                  <v-card-title class="text-center">กำลังประมวลผล </v-card-title>
-                  <p class="text-center mt-2">กรุณารอสักครู่</p>
-               </v-card-text>
-            </v-card>
+         <v-col cols="12" class="text-center">
+            <div class="minimal-spinner mx-auto mb-6"></div>
+            <div style="font-size: 16px; font-weight: 600; color: var(--color-text);">กำลังประมวลผล</div>
+            <div style="font-size: 14px; color: var(--color-text-tertiary); margin-top: 6px;">กรุณารอสักครู่...</div>
+         </v-col>
+      </v-row>
+      <v-row no-gutters style="position: absolute; left: 0; right: 0; bottom: 84px;">
+         <v-col cols="12" class="text-center">
+            <v-btn color="primary" @click="goToHistory">ไปหน้าประวัติ</v-btn>
          </v-col>
       </v-row>
    </v-container>
@@ -21,6 +21,8 @@ import { useOCR } from '@/services/ocr'
 import { useOnline } from '@/utils/offline'
 import { ref } from 'vue'
 
+import { useRouter } from 'vue-router'
+
 const emit = defineEmits(['result', 'loading', 'manualInput'])
 
 const cameraInput = ref(null)
@@ -28,9 +30,14 @@ const loading = ref(false)
 const online = useOnline()
 const { processImage } = useOCR()
 const { getCurrentPosition } = useGPS()
+const router = useRouter()
 
 const openCamera = () => {
    cameraInput.value.click()
+}
+
+const goToHistory = () => {
+   router.push({ name: 'history' })
 }
 
 const handleCapture = async (event) => {
