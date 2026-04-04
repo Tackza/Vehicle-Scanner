@@ -117,6 +117,7 @@ router.beforeEach((to, from, next) => {
          next({
             name: 'AuthQr',
          })
+         // next()
       } else {
          // มี userId - ผ่าน
          next()

@@ -141,7 +141,19 @@ const saveData = async (data) => {
          return
       }
 
-      const session = await db.userSession.get(1)
+      // ดึง user_id จาก localStorage ก่อน แล้ว fallback ไป userSession
+      let userId = null
+
+      // ลอง localStorage ก่อน
+      const userIdData = localStorage.getItem('userId')
+      if (userIdData) {
+         try {
+            const parsed = JSON.parse(userIdData)
+            userId = parsed.userId
+         } catch (e) {
+            console.error('Error parsing userId from localStorage:', e)
+         }
+      }
 
       const cleanData = {
          uid: generateUID(),
@@ -157,10 +169,12 @@ const saveData = async (data) => {
          lat: data.gps?.latitude || null,
          long: data.gps?.longitude || null,
          created_at: new Date().toISOString(),
-         created_by: session?.userData?.id || null,
+         created_by: userId,
          synced: 0,
          timestamp: Date.now()
       }
+      console.log('cleanData :>> ', cleanData);
+
 
       await db.scannedPlates.add(cleanData)
 

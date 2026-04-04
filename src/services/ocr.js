@@ -17,7 +17,6 @@ export const useOCR = () => {
       }
 
       try {
-         console.log('🚀 Uploading to:', OCR_URL)
          console.log('   File:', imageFile.name)
          console.log('   Size (original):', imageFile.size, 'bytes')
 
@@ -25,7 +24,7 @@ export const useOCR = () => {
          let processedFile = imageFile;
          if (imageFile.size > 50 * 1024) {
             console.log('📦 Resizing image to <50KB...');
-            let quality = 0.7;
+            let quality = 0.9;
             let resizedFile = imageFile;
             // ลดขนาดภาพและคุณภาพจนกว่าจะต่ำกว่า 50KB หรือ quality ต่ำสุด
             do {
@@ -35,7 +34,7 @@ export const useOCR = () => {
                   mimeType: 'image/jpeg',
                   quality: quality
                });
-               quality -= 0.1;
+               quality -= 0.05;
             } while (resizedFile.size > 50 * 1024 && quality >= 0.3);
             processedFile = resizedFile;
             console.log('   Size (resized):', processedFile.size, 'bytes');

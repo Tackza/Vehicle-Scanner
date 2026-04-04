@@ -59,7 +59,7 @@
                   <label
                      style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 6px; letter-spacing: 0.03em;">เลขสติกเกอร์
                      *</label>
-                  <v-text-field v-model="formData.stickerNumber" placeholder="เช่น 00456"
+                  <v-text-field v-model="formData.stickerNumber" placeholder="เช่น 72"
                      :rules="[rules.required, rules.numeric]" type="number" min="1" step="1" @input="onStickerInput"
                      hide-details="auto" density="comfortable" />
                </div>
@@ -73,7 +73,7 @@
                ยกเลิก
             </v-btn>
             <v-btn @click="handleSubmit" :loading="loading" :disabled="!isFormValid" rounded="lg" size="large"
-               style="flex: 2; font-weight: 700; background-color: #000; color: #fff; border-color: #000;">
+               style="flex: 2; font-weight: 700; background-color: #563dea; color: #fff; border-color: #563dea;">
                บันทึก
             </v-btn>
          </v-card-actions>
@@ -83,6 +83,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { findClosestProvince } from '../utils/fuzzyMatchProvince';
 
 const props = defineProps({
    modelValue: { type: Boolean, default: false },
@@ -138,7 +139,13 @@ onMounted(() => {
 watch(() => props.initialData, (newInitialData) => {
    if (newInitialData) {
       formData.plateNumber = newInitialData.plateNumber || ''
-      formData.province = newInitialData.province || ''
+      // Apply fuzzy matching to find the closest matching province
+      if (newInitialData.province) {
+         const matchedProvince = findClosestProvince(newInitialData.province, provinces)
+         formData.province = matchedProvince
+      } else {
+         formData.province = ''
+      }
    }
 }, { deep: true })
 

@@ -5,14 +5,33 @@
          <div class="camera-container">
             <video ref="videoEl" autoplay playsinline muted class="camera-view" />
             <canvas ref="canvasEl" style="display:none" />
+
+            <!-- 3x3 Grid Overlay -->
+            <div class="grid-overlay">
+               <div class="grid-row">
+                  <div class="grid-cell"></div>
+                  <div class="grid-cell"></div>
+                  <div class="grid-cell"></div>
+               </div>
+               <div class="grid-row">
+                  <div class="grid-cell"></div>
+                  <div class="grid-cell"></div>
+                  <div class="grid-cell"></div>
+               </div>
+               <div class="grid-row">
+                  <div class="grid-cell"></div>
+                  <div class="grid-cell"></div>
+                  <div class="grid-cell"></div>
+               </div>
+            </div>
+
             <div class="camera-controls">
-               <v-btn icon class="cancel-btn" color="grey" @click="closeDialog">
-                  <v-icon size="36">mdi-close-circle</v-icon>
-               </v-btn>
-               <v-btn class="capture-btn" color="transparent" icon @click="capture">
+               <v-btn class=" cancel-btn ma-2" color="red-lighten-2" icon="mdi-arrow-left" @click="closeDialog"></v-btn>
+
+               <v-btn class="capture-btn ma-2" color="transparent" icon="mdi-camera" @click="capture">
                   <span class="capture-inner"></span>
                </v-btn>
-               <v-btn icon disabled class="switch-btn" color="grey" @click="switchCamera">
+               <v-btn icon disabled class="switch-btn ma-2" color="transparent" @click="switchCamera">
                   <v-icon size="30">mdi-camera-flip</v-icon>
                </v-btn>
             </div>
@@ -84,23 +103,22 @@ const capture = () => {
    const canvas = canvasEl.value
    if (!video || !canvas) return
 
-   // ใช้ resolution จริงจาก video stream
    canvas.width = video.videoWidth
    canvas.height = video.videoHeight
 
    const ctx = canvas.getContext('2d')
    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
 
-   // ส่งเป็น Blob คุณภาพสูง (quality 0.95)
    canvas.toBlob((blob) => {
       if (blob) {
          const file = new File([blob], `capture_${Date.now()}.jpg`, {
             type: 'image/jpeg'
          })
          emits('capture', file)
-         closeDialog()
       }
    }, 'image/jpeg', 0.95)
+
+   emits('update:modelValue', false)
 }
 
 const switchCamera = () => {
@@ -133,13 +151,12 @@ onUnmounted(() => {
 .camera-dialog-card {
    width: 100vw;
    height: 100vh;
-   background: #000;
+   background: #563dea;
    display: flex;
    flex-direction: column;
    align-items: center;
    justify-content: center;
    padding: 0;
-   border-radius: 0;
 }
 
 .camera-container {
@@ -149,7 +166,7 @@ onUnmounted(() => {
    display: flex;
    align-items: center;
    justify-content: center;
-   background: #000;
+   background: #563dea;
    overflow: hidden;
 }
 
@@ -159,9 +176,39 @@ onUnmounted(() => {
    object-fit: cover;
 }
 
+.grid-overlay {
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   display: flex;
+   flex-direction: column;
+   pointer-events: none;
+}
+
+.grid-row {
+   flex: 1;
+   display: flex;
+   border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.grid-row:last-child {
+   border-bottom: none;
+}
+
+.grid-cell {
+   flex: 1;
+   border-right: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.grid-cell:last-child {
+   border-right: none;
+}
+
 .camera-controls {
    position: absolute;
-   bottom: 48px;
+   bottom: 0;
    left: 0;
    width: 100vw;
    display: flex;
@@ -169,7 +216,10 @@ onUnmounted(() => {
    justify-content: center;
    pointer-events: none;
    gap: 68px;
-   padding: 0 48px;
+   padding: 24px 48px;
+   background: rgba(0, 0, 0, 0.8);
+   backdrop-filter: blur(8px);
+   border-radius: 0%;
 }
 
 .capture-btn,

@@ -21,7 +21,7 @@
    </v-snackbar>
 
    <!-- Sync Progress -->
-   <v-snackbar v-model="showSyncProgress" :timeout="-1" color="#1C1917" location="bottom" rounded="lg">
+   <v-snackbar v-model="showSyncProgress" :timeout="-1" color="#563dea" location="bottom" rounded="lg">
       <div class="d-flex align-center" style="gap: 10px;">
          <v-progress-circular indeterminate size="18" width="2" color="white" />
          <span style="font-size: 14px; font-weight: 500;">กำลังซิงค์ข้อมูล...</span>

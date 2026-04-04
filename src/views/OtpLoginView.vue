@@ -16,7 +16,7 @@
             <form @submit.prevent="submitOtp" class="minimal-form">
                <v-otp-input v-model="otp" type="number" length="5" class="mb-6"></v-otp-input>
 
-               <v-btn type="submit" color="#1C1917" block size="large" rounded="lg"
+               <v-btn type="submit" color="#563dea" block size="large" rounded="lg"
                   style="font-weight: 700; font-size: 16px;">
                   ยืนยัน
                </v-btn>

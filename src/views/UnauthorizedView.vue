@@ -29,7 +29,7 @@
             <!-- Buttons -->
             <!-- <div class="mb-4">
                <v-btn 
-                  color="#1C1917" 
+                  color="#563dea" 
                   block 
                   size="large" 
                   rounded="lg"

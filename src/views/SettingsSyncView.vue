@@ -53,11 +53,11 @@
 
          <div class="menu-divider"></div>
 
-         <div class="menu-item menu-item--warning" @click="clearCache">
+         <!-- <div class="menu-item menu-item--warning" @click="clearCache">
             <v-icon size="20" color="#D97706">mdi-delete-sweep</v-icon>
             <span style="flex: 1;">ล้างแคช</span>
             <v-icon size="18" color="#A8A29E">mdi-chevron-right</v-icon>
-         </div>
+         </div> -->
 
          <div class="menu-item" @click="exportData">
             <v-icon size="20">mdi-download</v-icon>
@@ -87,7 +87,7 @@ import { useRouter } from 'vue-router'
 
 
 const router = useRouter()
-const { showSnackbar } = useSnackbar()
+const { show: showSnackbar } = useSnackbar()
 const online = useOnline()
 
 const userData = ref(null)
@@ -129,6 +129,7 @@ async function fetchProject() {
    projectName.value = null // loading
    try {
       const res = await api.get('/park/projects')
+      console.log('res :>> ', res);
       const list = res.data?.result || []
       console.log('list :>> ', list);
       if (list.length > 0) {
@@ -229,6 +230,13 @@ const logout = async () => {
    if (!confirm('ต้องการออกจากระบบ?')) return
 
    try {
+      const token = localStorage.getItem('loginData') ? JSON.parse(localStorage.getItem('loginData')).token : null
+      // Call logout API
+      await api.post('/park/logout', {
+         authorization: `Bearer ${token || ''}`
+      })
+
+
       localStorage.removeItem('userId')
       localStorage.removeItem('loginData')
       localStorage.removeItem('syncUserData')
@@ -236,6 +244,7 @@ const logout = async () => {
       router.push({ name: 'unauthorized' })
    } catch (error) {
       console.error('Logout error:', error)
+      showSnackbar('เกิดข้อผิดพลาด', 'error')
    }
 }
 </script>

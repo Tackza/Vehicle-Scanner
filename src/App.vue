@@ -27,21 +27,22 @@
          <button class="flex-grow-1 d-flex flex-column align-center justify-center"
             style="height: 68px; border: none; background: transparent; cursor: pointer; gap: 3px;"
             @click="$router.push('/')">
-            <v-icon :color="activeNav === 'history' ? '#1C1917' : '#A8A29E'" size="24">mdi-home-variant-outline</v-icon>
+            <v-icon :color="activeNav === 'history' ? '#563dea' : '#A8A29E'" size="24">mdi-home-variant-outline</v-icon>
             <span
-               :style="{ fontSize: '11px', fontWeight: activeNav === 'history' ? 700 : 500, color: activeNav === 'history' ? '#1C1917' : '#A8A29E' }">ประวัติ</span>
+               :style="{ fontSize: '11px', fontWeight: activeNav === 'history' ? 700 : 500, color: activeNav === 'history' ? '#563dea' : '#A8A29E' }">ประวัติ</span>
          </button>
 
-         <button class="d-flex align-center justify-center scan-btn-nav" @click="openCamera">
-            <v-icon color="white" size="24">mdi-camera</v-icon>
+         <button class="d-flex align-center justify-center scan-btn-nav" @click="openCamera" :disabled="cameraLoading">
+            <v-icon v-if="!cameraLoading" color="white" size="24">mdi-camera</v-icon>
+            <v-progress-circular v-else size="24" width="2" color="white" indeterminate></v-progress-circular>
          </button>
 
          <button class="flex-grow-1 d-flex flex-column align-center justify-center"
             style="height: 68px; border: none; background: transparent; cursor: pointer; gap: 3px;"
             @click="$router.push('/settings')">
-            <v-icon :color="activeNav === 'settings' ? '#1C1917' : '#A8A29E'" size="24">mdi-cog-outline</v-icon>
+            <v-icon :color="activeNav === 'settings' ? '#563dea' : '#A8A29E'" size="24">mdi-cog-outline</v-icon>
             <span
-               :style="{ fontSize: '11px', fontWeight: activeNav === 'settings' ? 700 : 500, color: activeNav === 'settings' ? '#1C1917' : '#A8A29E' }">ตั้งค่า</span>
+               :style="{ fontSize: '11px', fontWeight: activeNav === 'settings' ? 700 : 500, color: activeNav === 'settings' ? '#563dea' : '#A8A29E' }">ตั้งค่า</span>
          </button>
       </div>
 
@@ -54,7 +55,24 @@
       <!-- Global Snackbar -->
       <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="snackbar.timeout" location="bottom center"
          rounded="lg">
-         {{ snackbar.message }}
+         <div class="d-flex justify-space-between align-center" style="width: 100%; gap: 12px;">
+            <span>{{ snackbar.message }}</span>
+            <div v-if="snackbar.actions?.length" class="d-flex" style="gap: 8px;">
+               <button v-for="action in snackbar.actions" :key="action.label"
+                  @click="() => { action.callback?.(); snackbar.show = false }" style="
+                     background: transparent;
+                     border: none;
+                     color: white;
+                     font-weight: 600;
+                     cursor: pointer;
+                     font-size: 12px;
+                     text-transform: uppercase;
+                     letter-spacing: 0.5px;
+                  ">
+                  {{ action.label }}
+               </button>
+            </div>
+         </div>
       </v-snackbar>
 
       <!-- Global Success Popup -->
@@ -98,6 +116,7 @@ const { getCurrentPosition } = useGPS()
 const cameraDialog = ref(false)
 const hideNavBar = ref(false)
 const successPopup = ref(false)
+const cameraLoading = ref(false)
 let successTimeout = null
 
 const playSuccessSound = () => {
@@ -153,7 +172,12 @@ const activeNav = computed(() => {
 
 // ฟังก์ชันเปิดกล้อง
 const openCamera = () => {
+   cameraLoading.value = true
    cameraDialog.value = true
+   // Clear loading after a short delay (camera dialog should be visible)
+   setTimeout(() => {
+      cameraLoading.value = false
+   }, 3000)
 }
 
 // ฟังก์ชันจัดการการถ่ายรูป (image อาจเป็น base64 หรือ object)
@@ -223,11 +247,12 @@ const handleCameraCapture = async (image) => {
          const gps = await getCurrentPosition()
          const result = await processImage(processedFile)
 
+         console.log('📸 Camera Result:', result)
          window.dispatchEvent(new CustomEvent('cameraResult', {
             detail: { ...result, gps }
          }))
       } catch (error) {
-         console.error(error)
+         console.error('❌ OCR Error:', error)
          window.dispatchEvent(new CustomEvent('cameraResult', {
             detail: {
                success: false,

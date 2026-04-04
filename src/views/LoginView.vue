@@ -4,7 +4,8 @@
          <v-col cols="12" sm="8" md="4" style="max-width: 380px;">
             <!-- Logo -->
             <div class="text-center mb-12">
-               <div style="width: 64px; height: 64px; border-radius: 16px; background: var(--color-primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+               <div
+                  style="width: 64px; height: 64px; border-radius: 16px; background: var(--color-primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
                   <v-icon color="white" size="30">mdi-camera</v-icon>
                </div>
                <div style="font-size: 22px; font-weight: 800; color: var(--color-text); letter-spacing: -0.02em;">
@@ -18,57 +19,35 @@
             <!-- Form -->
             <v-form ref="form" @submit.prevent="handleLogin" class="minimal-form">
                <div class="mb-4">
-                  <label style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 6px; letter-spacing: 0.03em;">ชื่อผู้ใช้</label>
-                  <v-text-field
-                     v-model="formData.username"
-                     placeholder="กรอกชื่อผู้ใช้"
-                     autofocus
-                     :rules="[rules.required]"
-                     hide-details="auto"
-                     density="comfortable"
-                  />
+                  <label
+                     style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 6px; letter-spacing: 0.03em;">ชื่อผู้ใช้</label>
+                  <v-text-field v-model="formData.username" placeholder="กรอกชื่อผู้ใช้" autofocus
+                     :rules="[rules.required]" hide-details="auto" density="comfortable" />
                </div>
 
                <div class="mb-4">
-                  <label style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 6px; letter-spacing: 0.03em;">รหัสผ่าน</label>
-                  <v-text-field
-                     v-model="formData.password"
-                     placeholder="กรอกรหัสผ่าน"
+                  <label
+                     style="font-size: 12px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 6px; letter-spacing: 0.03em;">รหัสผ่าน</label>
+                  <v-text-field v-model="formData.password" placeholder="กรอกรหัสผ่าน"
                      :type="showPassword ? 'text' : 'password'"
                      :append-inner-icon="showPassword ? 'mdi-eye-outline' : 'mdi-eye-off-outline'"
-                     @click:append-inner="showPassword = !showPassword"
-                     :rules="[rules.required]"
-                     hide-details="auto"
-                     density="comfortable"
-                  />
+                     @click:append-inner="showPassword = !showPassword" :rules="[rules.required]" hide-details="auto"
+                     density="comfortable" />
                </div>
 
-               <v-alert v-if="errorMessage" type="error" density="compact" class="mb-4" variant="tonal" rounded="lg" border="start">
+               <v-alert v-if="errorMessage" type="error" density="compact" class="mb-4" variant="tonal" rounded="lg"
+                  border="start">
                   {{ errorMessage }}
                </v-alert>
 
-               <v-btn
-                  color="#1C1917"
-                  block
-                  size="large"
-                  type="submit"
-                  :loading="loading"
-                  rounded="lg"
-                  class="mt-2"
-                  style="font-weight: 700; font-size: 16px; letter-spacing: 0;"
-               >
+               <v-btn color="#563dea" block size="large" type="submit" :loading="loading" rounded="lg" class="mt-2"
+                  style="font-weight: 700; font-size: 16px; letter-spacing: 0;">
                   เข้าสู่ระบบ
                </v-btn>
 
-               <v-btn
-                  variant="outlined"
-                  block
-                  size="large"
-                  class="mt-3"
-                  rounded="lg"
+               <v-btn variant="outlined" block size="large" class="mt-3" rounded="lg"
                   style="font-weight: 600; font-size: 15px; letter-spacing: 0; border-color: var(--color-border); color: var(--color-text-secondary);"
-                  @click="goOtpLogin"
-               >
+                  @click="goOtpLogin">
                   สมัครด้วย OTP
                </v-btn>
             </v-form>

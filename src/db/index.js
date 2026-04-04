@@ -89,8 +89,14 @@ export const clearAllData = async () => {
 
 // Helper function สำหรับ export data
 export const exportData = async () => {
+   const scannedPlates = await db.scannedPlates.toArray()
+   const scannedPlatesWithoutPhotos = scannedPlates.map(plate => {
+      const { photo_file, ...rest } = plate
+      return rest
+   })
+
    const data = {
-      scannedPlates: await db.scannedPlates.toArray(),
+      scannedPlates: scannedPlatesWithoutPhotos,
       registeredVehicles: await db.registeredVehicles.toArray(),
       syncQueue: await db.syncQueue.toArray()
    }
