@@ -32,7 +32,7 @@ class SyncService {
       this.isRunning = true
       console.log('🔄 Sync service started')
 
-      // Sync ทุก 30 วินาที
+      // Sync ทุก 60 วินาที
       this.syncInterval = setInterval(() => {
          const onlineStatus = isOnline()
          console.log(`⏰ Sync interval tick - Online: ${onlineStatus}, Syncing: ${this.isSyncing}`)
@@ -41,13 +41,13 @@ class SyncService {
          } else {
             console.log('⚠️ Skip sync - offline')
          }
-      }, 30 * 1000)
+      }, 60 * 1000)
 
       this.registryInterval = setInterval(() => {
          if (isOnline()) {
             // this.syncRegistry()
          }
-      }, 30 * 1000)
+      }, 60 * 1000)
 
       // Run ทันทีถ้าออนไลน์
       if (isOnline()) {
@@ -138,9 +138,9 @@ class SyncService {
                })
             })
             // แสดง key-value ทั้งหมดใน formData
-            for (let pair of formData.entries()) {
-               console.log('FormData', pair[0] + ':', pair[1]);
-            }
+            // for (let pair of formData.entries()) {
+            //    console.log('FormData', pair[0] + ':', pair[1]);
+            // }
             formData.append('batch_count', batch.length)
 
             try {

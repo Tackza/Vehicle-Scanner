@@ -73,6 +73,11 @@
             <v-icon size="18" color="#A8A29E">mdi-chevron-right</v-icon>
          </div>
       </div>
+
+      <!-- Version Info -->
+      <div style="text-align: center; margin-top: 20px; padding: 16px; color: #999; font-size: 12px;">
+         Version {{ appVersion }}
+      </div>
    </v-container>
 </template>
 
@@ -98,6 +103,9 @@ const syncErrorCount = ref(0)
 const projectId = ref(null)
 const projectName = ref(null) // null = loading, '' = ไม่มี, string = มี
 const isProjectActive = ref(false)
+
+// Get version from build
+const appVersion = __APP_VERSION__
 
 onMounted(async () => {
    // Get user data from localStorage

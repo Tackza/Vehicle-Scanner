@@ -3,6 +3,46 @@ import Dexie from 'dexie'
 
 export const db = new Dexie('VehicleScanner')
 
+// Version 6: เพิ่ม compound index project_id+timestamp สำหรับ query speed
+db.version(6).stores({
+   // ข้อมูลป้ายทะเบียนที่สแกน
+   scannedPlates: '++id, uid, plateNumber, timestamp, synced, gps, stickerNumber, retryCount, lastSyncAttempt, syncedAt, local_id, project_id, [project_id+timestamp]',
+
+   // ข้อมูลการลงทะเบียน
+   registeredVehicles: 'plateNumber, stickerNumber, ownerName, expiryDate, updatedAt',
+
+   // Queue สำหรับ sync
+   syncQueue: '++id, action, data, retryCount, createdAt, status',
+
+   // User session
+   userSession: 'id, token, userData',
+
+   // Projects
+   projects: 'project_id, name, start_time, end_time'
+}).upgrade(async (trans) => {
+   console.log('✓ Database upgraded to version 6 - added compound index [project_id+timestamp] for faster queries')
+})
+
+// Version 5: เพิ่ม project_id index ให้ scannedPlates
+db.version(5).stores({
+   // ข้อมูลป้ายทะเบียนที่สแกน
+   scannedPlates: '++id, uid, plateNumber, timestamp, synced, gps, stickerNumber, retryCount, lastSyncAttempt, syncedAt, local_id, project_id',
+
+   // ข้อมูลการลงทะเบียน
+   registeredVehicles: 'plateNumber, stickerNumber, ownerName, expiryDate, updatedAt',
+
+   // Queue สำหรับ sync
+   syncQueue: '++id, action, data, retryCount, createdAt, status',
+
+   // User session
+   userSession: 'id, token, userData',
+
+   // Projects
+   projects: 'project_id, name, start_time, end_time'
+}).upgrade(async (trans) => {
+   console.log('✓ Database upgraded to version 5 - added project_id index on scannedPlates')
+})
+
 // Version 4: เพิ่ม local_id field
 db.version(4).stores({
    // ข้อมูลป้ายทะเบียนที่สแกน

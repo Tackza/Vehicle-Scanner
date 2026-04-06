@@ -29,27 +29,14 @@
 
       <!-- History List -->
       <div v-else class="d-flex flex-column" style="gap: 8px;">
-         <div
-            v-for="item in items"
-            :key="item.id"
-            class="history-card"
-            @click="openImageDialog(item.photo_file)"
-         >
+         <div v-for="item in items" :key="item.id" class="history-card" @click="openImageDialog(item.photo_file)">
             <!-- Thumbnail -->
             <div class="history-card__thumb">
                <template v-if="item.photo_file">
-                  <img
-                     v-if="item.imageLoaded"
-                     :src="item.photo_file"
-                     alt=""
-                  />
+                  <img v-if="item.imageLoaded" :src="item.photo_file" alt="" />
                   <v-icon v-else size="22" color="#A8A29E">mdi-image-outline</v-icon>
-                  <img
-                     v-if="!item.imageLoaded"
-                     :src="item.photo_file"
-                     style="display:none; position:absolute;"
-                     @load="item.imageLoaded = true"
-                  />
+                  <img v-if="!item.imageLoaded" :src="item.photo_file" style="display:none; position:absolute;"
+                     @load="item.imageLoaded = true" />
                </template>
                <v-icon v-else size="22" color="#A8A29E">mdi-image-off-outline</v-icon>
             </div>
@@ -79,9 +66,13 @@
 
       <!-- Image Dialog -->
       <v-dialog v-model="imageDialog" max-width="600">
-         <v-card style="border-radius: 16px; overflow: hidden;">
-            <v-card-text class="pa-0">
+         <v-card style="border-radius: 16px; overflow: hidden; position: relative;">
+            <v-card-text class="pa-0" style="position: relative;">
                <v-img :src="selectedImage" contain />
+               <v-btn icon="mdi-close" variant="elevated" size="large" @click="imageDialog = false"
+                  style="position: absolute; bottom: 8px; right: 8px; opacity: 0.8; transition: opacity 0.2s;"
+                  @mouseenter="(e) => e.target.style.opacity = '0.8'"
+                  @mouseleave="(e) => e.target.style.opacity = '0.5'" />
             </v-card-text>
          </v-card>
       </v-dialog>
@@ -91,14 +82,16 @@
 <script setup>
 import { useSnackbar } from '@/composables/snackbar'
 import { db } from '@/db'
-import { computed, onMounted, ref } from 'vue'
+import Dexie from 'dexie'
+import { onMounted, ref } from 'vue'
 
-const { showSnackbar } = useSnackbar()
+const { show: showSnackbar } = useSnackbar()
 
 const loading = ref(false)
 const items = ref([])
 const imageDialog = ref(false)
 const selectedImage = ref('')
+const projectId = ref(null)
 
 // const unsyncedCount = computed(() => {
 //    return items.value.filter((item) => item.synced === 0).length
@@ -115,6 +108,7 @@ const selectedImage = ref('')
 // })
 
 onMounted(async () => {
+   await fetchProject()
    await loadData()
    window.addEventListener('successPopupClosed', () => {
       setTimeout(() => {
@@ -123,10 +117,39 @@ onMounted(async () => {
    })
 })
 
+const fetchProject = async () => {
+   try {
+      const localProjects = await db.projects.toArray()
+      if (localProjects.length > 0) {
+         projectId.value = localProjects[0].project_id
+      } else {
+         projectId.value = null
+      }
+   } catch (error) {
+      console.error('Error fetching project:', error)
+      projectId.value = null
+   }
+}
+
 const loadData = async () => {
    loading.value = true
    try {
-      const data = await db.scannedPlates.orderBy('timestamp').reverse().limit(6).toArray()
+      if (!projectId.value) {
+         items.value = []
+         return
+      }
+      
+      // 🚀 ใช้ compound index [project_id+timestamp] สำหรับ query ที่เร็ว
+      const data = await db.scannedPlates
+         .where('[project_id+timestamp]')
+         .between(
+            [projectId.value, Dexie.minKey],
+            [projectId.value, Dexie.maxKey]
+         )
+         .reverse()
+         .limit(6)
+         .toArray()
+      
       items.value = data.map(item => ({ ...item, imageLoaded: false }))
    } catch (error) {
       console.error('Load data error:', error)

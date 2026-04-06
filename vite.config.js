@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import vuetify from 'vite-plugin-vuetify'
+import packageJson from './package.json' with { type: 'json' }
 
 export default defineConfig({
    plugins: [
@@ -52,6 +53,9 @@ export default defineConfig({
       alias: {
          '@': fileURLToPath(new URL('./src', import.meta.url))
       }
+   },
+   define: {
+      __APP_VERSION__: JSON.stringify(packageJson.version)
    },
    server: {
       port: 3000,

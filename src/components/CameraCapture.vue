@@ -9,7 +9,7 @@
       </v-row>
       <v-row no-gutters style="position: absolute; left: 0; right: 0; bottom: 84px;">
          <v-col cols="12" class="text-center">
-            <v-btn color="primary" @click="goToHistory">ไปหน้าประวัติ</v-btn>
+            <v-btn color="primary" @click="goToHistory"> <v-icon right>mdi-arrow-left</v-icon> ไปหน้าประวัติ</v-btn>
          </v-col>
       </v-row>
    </v-container>
